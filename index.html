@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Jamy FPV — Coming Soon</title>
+  <style>
+    :root {
+      --bg: #090b10;
+      --text: #f5f7fb;
+      --muted: #8f98a7;
+      --accent: #ffffff;
+      --line: rgba(255, 255, 255, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--text);
+      background: var(--bg);
+    }
+
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 48px 28px;
+    }
+
+    .wrap {
+      width: 100%;
+      max-width: 760px;
+      text-align: center;
+    }
+
+    .eyebrow {
+      margin-bottom: 22px;
+      color: var(--muted);
+      font-size: 11px;
+      letter-spacing: 0.26em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(60px, 10vw, 112px);
+      line-height: 0.92;
+      letter-spacing: -0.06em;
+      font-weight: 700;
+    }
+
+    .subtitle {
+      max-width: 620px;
+      margin: 26px auto 0;
+      color: var(--muted);
+      font-size: 17px;
+      line-height: 1.85;
+    }
+
+    .meta {
+      margin-top: 40px;
+      padding-top: 24px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 13px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .meta a {
+      color: var(--accent);
+      text-decoration: none;
+      letter-spacing: 0.04em;
+      text-transform: none;
+    }
+
+    .meta a:hover {
+      opacity: 0.85;
+    }
+
+    .dot {
+      display: inline-block;
+      margin: 0 12px;
+      color: rgba(255,255,255,0.24);
+    }
+
+    @media (max-width: 640px) {
+      body {
+        padding: 32px 22px;
+      }
+
+      h1 {
+        font-size: clamp(44px, 16vw, 74px);
+      }
+
+      .subtitle {
+        font-size: 15px;
+        line-height: 1.75;
+      }
+
+      .meta {
+        line-height: 2;
+      }
+
+      .dot {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <div class="eyebrow">Coming Soon</div>
+    <h1>Jamy FPV</h1>
+    <p class="subtitle">
+      Cinematic FPV drone video for businesses, venues, events, and promo content.
+      Website launching soon.
+    </p>
+
+    <div class="meta">
+      Netherlands <span class="dot">•</span>
+      <a href="mailto:hello@jamyfpv.com">hello@jamyfpv.com</a>
+    </div>
+  </main>
+</body>
+</html>
