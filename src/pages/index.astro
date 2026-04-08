@@ -47,16 +47,9 @@ const hasCms = contentfulConfigured();
       </div>
 
       {flights.length > 0 ? (
-        <>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-9 md:gap-6">
-            {flights.slice(0, 3).map((flight) => <FlightCard flight={flight} />)}
-          </div>
-          {flights.length > 3 && (
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-9 md:gap-6 mt-6">
-              {flights.slice(3, 6).map((flight) => <FlightCard flight={flight} />)}
-            </div>
-          )}
-        </>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-9 md:gap-6">
+          {flights.map((flight) => <FlightCard flight={flight} />)}
+        </div>
       ) : (
         <div class="rounded-[20px] border border-dashed border-[rgba(251,124,29,0.25)] bg-[rgba(24,24,24,0.8)] p-8 text-page-muted">
           <p>
