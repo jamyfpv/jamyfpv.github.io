@@ -1,0 +1,72 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import ContactSection from "@/components/ContactSection.astro";
+import FlightCard from "@/components/FlightCard.astro";
+import { contentfulConfigured, getHomepageFlights } from "@/lib/contentful";
+import { SITE_DESCRIPTION, SITE_NAME, withBase } from "@/lib/site";
+
+const flights = await getHomepageFlights(6);
+const hasCms = contentfulConfigured();
+---
+
+<BaseLayout title={`${SITE_NAME} | Flights`} description={SITE_DESCRIPTION} pathname="/">
+  <section class="relative min-h-screen flex flex-col items-center justify-center pt-20 overflow-hidden">
+    <div class="flex items-center gap-2 mb-4">
+      <span class="w-2 h-2 rounded-full bg-primary animate-[pulse-dot_2s_ease-in-out_infinite]"></span>
+      <span class="text-xs tracking-[0.3em] uppercase text-primary font-medium">Live from the sky</span>
+    </div>
+
+    <h1 class="text-6xl md:text-8xl font-display font-bold tracking-tight text-foreground">
+      Jamy<span class="text-gradient">FPV</span>
+    </h1>
+
+    <div class="flex items-center gap-4 mt-8 mb-16">
+      <a
+        class="px-6 py-2.5 text-xs tracking-[0.15em] uppercase font-semibold bg-[#db6d17] text-primary-foreground rounded-md hover:bg-[#a85816] transition-colors duration-300 no-underline"
+        href={withBase("/#contact")}
+      >
+        Get in touch
+      </a>
+      <a
+        class="px-6 py-2.5 text-xs tracking-[0.15em] uppercase font-semibold border border-[#db6d17] text-[#db6d17] rounded-md hover:bg-[#a85816] hover:border-[#a85816] hover:text-white transition-colors duration-300 no-underline"
+        href={withBase("/#showcase")}
+      >
+        Watch reels
+      </a>
+    </div>
+
+    <div class="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent"></div>
+  </section>
+
+  <section class="pt-24 px-6 md:px-12 max-w-6xl mx-auto scroll-mt-12" id="showcase">
+      <div class="mb-10 grid gap-[1.35rem]">
+        <span class="block h-[0.12rem] w-12 bg-primary" aria-hidden="true"></span>
+        <h2 class="text-3xl md:text-4xl font-display font-bold text-foreground">
+          Latest <span class="text-primary">Flights</span>
+        </h2>
+      </div>
+
+      {flights.length > 0 ? (
+        <>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {flights.slice(0, 3).map((flight) => <FlightCard flight={flight} />)}
+          </div>
+          {flights.length > 3 && (
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+              {flights.slice(3, 6).map((flight) => <FlightCard flight={flight} />)}
+            </div>
+          )}
+        </>
+      ) : (
+        <div class="rounded-[20px] border border-dashed border-[rgba(251,124,29,0.25)] bg-[rgba(24,24,24,0.8)] p-8 text-page-muted">
+          <p>
+            {hasCms
+              ? "No published flights are available yet."
+              : "Contentful is not configured yet. Add the environment variables and your published flights will appear here at build time."}
+          </p>
+        </div>
+      )}
+  </section>
+
+  <ContactSection />
+</BaseLayout>

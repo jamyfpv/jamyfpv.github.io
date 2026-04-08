@@ -1,0 +1,108 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-display: "Space Grotesk", "Segoe UI", sans-serif;
+  --font-body: "Outfit", "Segoe UI", sans-serif;
+
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-border: hsl(var(--border));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+}
+
+@utility text-gradient {
+  @apply bg-gradient-to-r from-primary to-orange-400 bg-clip-text text-transparent;
+}
+
+:root {
+  --background: 0 0% 8%;
+  --foreground: 0 0% 95%;
+  --card: 0 0% 12%;
+  --card-foreground: 0 0% 95%;
+  --popover: 0 0% 12%;
+  --popover-foreground: 0 0% 95%;
+  --primary: 24 95% 53%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 0 0% 15%;
+  --secondary-foreground: 0 0% 95%;
+  --muted: 0 0% 18%;
+  --muted-foreground: 0 0% 55%;
+  --accent: 24 95% 53%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 0 0% 20%;
+  --input: 0 0% 20%;
+  --ring: 24 95% 53%;
+  --radius: 0.75rem;
+  --container: min(1180px, calc(100vw - 2rem));
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-body);
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-display);
+}
+
+a:not([class]) {
+  color: inherit;
+}
+
+.page-shell {
+  min-height: 100vh;
+}
+
+.container {
+  width: var(--container);
+  margin: 0 auto;
+}
+
+@keyframes pulse-dot {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.55;
+    transform: scale(0.82);
+  }
+}
+
+@keyframes float-drone {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-12px);
+  }
+}
+
+/*
+  The rest is intentionally minimal.
+  Tailwind preflight already handles box-sizing, margins, image behavior, and base resets.
+*/

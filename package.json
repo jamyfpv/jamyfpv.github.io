@@ -1,0 +1,29 @@
+{
+  "name": "jamyfpv.github.io",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro check && astro build",
+    "preview": "astro preview",
+    "check": "astro check"
+  },
+  "dependencies": {
+    "@astrojs/sitemap": "^3.1.6",
+    "astro": "^5.7.0",
+    "leaflet": "^1.9.4",
+    "lucide": "^1.7.0",
+    "lucide-react": "^0.462.0",
+    "lucide-static": "^0.462.0",
+    "simple-icons": "^16.15.0"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.4",
+    "@tailwindcss/vite": "^4.2.2",
+    "@types/leaflet": "^1.9.21",
+    "tailwindcss": "^4.2.2",
+    "typescript": "^5.8.3"
+  }
+}

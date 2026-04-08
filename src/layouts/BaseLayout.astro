@@ -1,0 +1,41 @@
+---
+import Header from "@/components/Header.astro";
+import Footer from "@/components/Footer.astro";
+import SeoHead from "@/components/SeoHead.astro";
+import "@/styles/global.css";
+
+interface Props {
+  title?: string;
+  description?: string;
+  pathname?: string;
+  image?: string;
+  type?: "website" | "article";
+}
+
+const props = Astro.props as Props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <SeoHead {...props} />
+    <slot name="head" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <Header />
+      <main>
+        <slot />
+      </main>
+      <Footer />
+    </div>
+  </body>
+</html>

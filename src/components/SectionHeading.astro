@@ -1,0 +1,17 @@
+---
+interface Props {
+  eyebrow?: string;
+  title?: string;
+  intro?: string;
+  align?: "left" | "center";
+  compact?: boolean;
+}
+
+const { eyebrow, title, intro, align = "left", compact = false } = Astro.props as Props;
+---
+
+<div class:list={["section-heading", align === "center" && "is-centered", compact && "is-compact"]}>
+  {eyebrow && <p class="eyebrow">{eyebrow}</p>}
+  {title && <h3>{title}</h3>}
+  {intro && <p class="section-intro">{intro}</p>}
+</div>

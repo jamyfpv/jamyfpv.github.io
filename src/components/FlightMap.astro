@@ -1,0 +1,193 @@
+---
+import "leaflet/dist/leaflet.css";
+
+interface Props {
+  slug: string;
+  lat: number;
+  lon: number;
+  title: string;
+  locationLabel: string;
+}
+
+const { slug, lat, lon, title, locationLabel } = Astro.props;
+
+const bounds = [
+  [lat - 0.1, lon - 0.1],
+  [lat + 0.1, lon + 0.1]
+];
+---
+
+<div
+  id={`flight-map-${slug.replace(/[^a-z0-9_-]/gi, "-").toLowerCase()}`}
+  class="flight-map-canvas"
+  data-flight-map
+  data-lat={String(lat)}
+  data-lon={String(lon)}
+  data-title={title}
+  data-location-label={locationLabel}
+  data-bounds={JSON.stringify(bounds)}
+  aria-label={`${title} location map`}
+></div>
+
+<script>
+  const mapElements = [...document.querySelectorAll<HTMLElement>("[data-flight-map]")].filter(
+    (element) => element.dataset.mapReady !== "true"
+  );
+
+  if (mapElements.length > 0) {
+    const L = await import("leaflet");
+
+    for (const element of mapElements) {
+      const lat = Number(element.dataset.lat);
+      const lon = Number(element.dataset.lon);
+      const title = element.dataset.title ?? "Flight location";
+      const locationLabel = element.dataset.locationLabel ?? "";
+      const bounds = JSON.parse(element.dataset.bounds ?? "[]");
+
+      if (Number.isNaN(lat) || Number.isNaN(lon) || bounds.length !== 2) {
+        continue;
+      }
+
+      element.dataset.mapReady = "true";
+
+      const map = L.map(element, {
+        zoomControl: false,
+        attributionControl: false,
+        scrollWheelZoom: false,
+        dragging: true,
+        doubleClickZoom: false,
+        boxZoom: false,
+        keyboard: false,
+        tapHold: false,
+        touchZoom: true
+      });
+
+      L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
+        subdomains: "abcd",
+        maxZoom: 20,
+        attribution:
+          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+      }).addTo(map);
+
+      map.fitBounds(bounds, {
+        padding: [24, 24]
+      });
+
+      const marker = L.marker([lat, lon], {
+        icon: L.divIcon({
+          className: "flight-map-pin-wrapper",
+          html: '<span class="flight-map-marker" aria-hidden="true"></span>',
+          iconSize: [28, 28],
+          iconAnchor: [14, 14]
+        })
+      }).addTo(map);
+
+      marker
+        .bindPopup(
+          `<strong>${title}</strong>${locationLabel ? `<br />${locationLabel}` : ""}`,
+          {
+            closeButton: false,
+            autoClose: false,
+            closeOnClick: false,
+            offset: [0, -18]
+          }
+        )
+        .openPopup();
+
+      L.control
+        .attribution({
+          position: "bottomright",
+          prefix: false
+        })
+        .addAttribution(
+          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
+        )
+        .addTo(map);
+    }
+  }
+</script>
+
+<style>
+  .flight-map-canvas {
+    width: 100%;
+    height: 100%;
+    min-height: 285px;
+    background:
+      radial-gradient(circle at top, rgba(229, 103, 23, 1), transparent 34%),
+      #120a08;
+  }
+
+  .flight-map-canvas :global(.leaflet-container) {
+    width: 100%;
+    height: 100%;
+    color: #f7efe8;
+    background: #120a08;
+    font: inherit;
+  }
+
+  .flight-map-canvas :global(.leaflet-tile) {
+    filter: saturate(0.98) brightness(0.94) contrast(1.06);
+  }
+
+  .flight-map-canvas :global(.leaflet-popup-content-wrapper) {
+    color: #f7efe8;
+    border: 1px solid rgba(229, 103, 23, 1);
+    border-radius: 14px;
+    background: rgba(19, 11, 8, 0.94);
+    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.4);
+  }
+
+  .flight-map-canvas :global(.leaflet-popup-content) {
+    margin: 0;
+    padding: 0.8rem 0.95rem;
+    line-height: 1.45;
+  }
+
+  .flight-map-canvas :global(.leaflet-popup-tip) {
+    background: rgba(19, 11, 8, 0.94);
+  }
+
+  .flight-map-canvas :global(.leaflet-popup-close-button) {
+    display: none;
+  }
+
+  .flight-map-canvas :global(.leaflet-control-attribution) {
+    margin: 0 0.7rem 0.55rem 0;
+    color: rgba(247, 239, 232, 0.72);
+    border: 1px solid rgba(229, 103, 23, 0.18);
+    border-radius: 999px;
+    background: rgba(18, 10, 8, 0.8);
+    backdrop-filter: blur(14px);
+  }
+
+  .flight-map-canvas :global(.leaflet-control-attribution a) {
+    color: #f2a06b;
+  }
+
+  .flight-map-canvas :global(.flight-map-pin-wrapper) {
+    background: transparent;
+    border: 0;
+  }
+
+  .flight-map-canvas :global(.flight-map-marker) {
+    position: relative;
+    display: block;
+    width: 28px;
+    height: 28px;
+    border: 3px solid rgba(18, 10, 8, 0.96);
+    border-radius: 999px;
+    background:
+      radial-gradient(circle, #fff1e7 0 26%, #f2a06b 27% 58%, #e56717 59% 100%);
+    box-shadow:
+      0 0 0 8px rgba(229, 103, 23, 0.16),
+      0 0 34px rgba(229, 103, 23, 0.34);
+  }
+
+  .flight-map-canvas :global(.flight-map-marker::after) {
+    content: "";
+    position: absolute;
+    inset: -12px;
+    border: 2px solid rgba(229, 103, 23, 0.22);
+    border-radius: 999px;
+  }
+</style>

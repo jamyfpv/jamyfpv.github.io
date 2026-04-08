@@ -1,0 +1,27 @@
+---
+import { getCanonicalUrl, getBaseSeo } from "@/lib/seo";
+
+interface Props {
+  title?: string;
+  description?: string;
+  pathname?: string;
+  image?: string;
+  type?: "website" | "article";
+}
+
+const seo = getBaseSeo(Astro.props as Props);
+const canonical = getCanonicalUrl(seo.pathname);
+---
+
+<title>{seo.title}</title>
+<meta name="description" content={seo.description} />
+<link rel="canonical" href={canonical} />
+<meta property="og:type" content={seo.type} />
+<meta property="og:title" content={seo.title} />
+<meta property="og:description" content={seo.description} />
+<meta property="og:url" content={canonical} />
+<meta property="og:image" content={seo.image} />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={seo.title} />
+<meta name="twitter:description" content={seo.description} />
+<meta name="twitter:image" content={seo.image} />

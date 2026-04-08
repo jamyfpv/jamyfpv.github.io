@@ -1,0 +1,66 @@
+---
+import { siInstagram, siYoutube } from "simple-icons";
+import { getContactEmail } from "@/lib/site";
+
+const email = getContactEmail();
+const year = new Date().getFullYear();
+
+const socialLinks = [
+  {
+    href: `mailto:${email}`,
+    label: "Email",
+    type: "mail",
+  },
+  {
+    href: "https://instagram.com/jamyfpv",
+    label: "Instagram",
+    type: "brand",
+    icon: siInstagram,
+  },
+  {
+    href: "https://youtube.com/@jamyfpv",
+    label: "YouTube",
+    type: "brand",
+    icon: siYoutube,
+  },
+] as const;
+---
+
+<footer class="border-t border-border py-8 px-6 md:px-12">
+  <div class="max-w-6xl mx-auto flex items-center justify-between">
+    <p class="text-sm text-muted-foreground">
+      &copy; {year} <span class="text-primary font-medium">JamyFPV</span> All rights reserved
+    </p>
+    <div class="flex items-center gap-4">
+      {socialLinks.map((link) => (
+        <a
+          href={link.href}
+          aria-label={link.label}
+          target={link.type === "brand" ? "_blank" : undefined}
+          rel={link.type === "brand" ? "noreferrer" : undefined}
+          class="w-9 h-9 rounded-full bg-secondary flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all duration-300"
+        >
+          {link.type === "mail" ? (
+            <svg
+              class="h-4 w-4"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"></path>
+              <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+            </svg>
+          ) : (
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d={link.icon.path}></path>
+            </svg>
+          )}
+        </a>
+      ))}
+    </div>
+  </div>
+</footer>

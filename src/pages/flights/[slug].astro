@@ -1,0 +1,323 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import FlightMap from "@/components/FlightMap.astro";
+import { getFlightBySlug, getFlightSlugs } from "@/lib/contentful";
+import { getFlightSeo } from "@/lib/seo";
+import { absoluteUrl } from "@/lib/site";
+import { getYoutubeEmbedUrl } from "@/lib/youtube";
+
+export async function getStaticPaths() {
+  const slugs = await getFlightSlugs();
+  return slugs.map((slug) => ({
+    params: { slug }
+  }));
+}
+
+const { slug } = Astro.params;
+
+if (!slug) {
+  throw new Error("Missing flight slug.");
+}
+
+const flight = await getFlightBySlug(slug);
+
+if (!flight) {
+  throw new Error(`Flight not found for slug: ${slug}`);
+}
+
+const seo = getFlightSeo(flight);
+const embedUrl = getYoutubeEmbedUrl(flight.youtubeVideoId);
+type MetadataItem = {
+  label?: string;
+  value: string;
+};
+type Coordinates = {
+  lat: number;
+  lon: number;
+};
+
+const metadata = [
+  flight.flightDate && {
+    value: new Intl.DateTimeFormat("en", {
+      year: "numeric",
+      month: "long",
+      day: "numeric"
+    }).format(new Date(flight.flightDate))
+  },
+  flight.shotFor && {
+    label: "Shot for",
+    value: flight.shotFor
+  }
+].filter((item): item is MetadataItem => Boolean(item));
+
+function parseCoordinates(location?: string): Coordinates | null {
+  if (!location) {
+    return null;
+  }
+
+  const match = location.match(/(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)/);
+  if (!match) {
+    return null;
+  }
+
+  const lat = Number(match[1]);
+  const lon = Number(match[2]);
+
+  if (Number.isNaN(lat) || Number.isNaN(lon)) {
+    return null;
+  }
+
+  return { lat, lon };
+}
+
+const coordinates = parseCoordinates(flight.location);
+const hasMap = Boolean(coordinates);
+
+const structuredData = {
+  "@context": "https://schema.org",
+  "@type": "VideoObject",
+  name: flight.seoTitle || flight.title,
+  description: flight.seoDescription || flight.shortDescription,
+  thumbnailUrl: [flight.thumbnailUrl],
+  uploadDate: flight.publishedAt,
+  embedUrl,
+  contentUrl: flight.youtubeUrl,
+  url: absoluteUrl(`/flights/${flight.slug}/`)
+};
+---
+
+<BaseLayout
+  title={seo.title}
+  description={seo.description}
+  pathname={seo.pathname}
+  image={seo.image}
+  type="article"
+>
+  <script is:inline slot="head" type="application/ld+json" set:html={JSON.stringify(structuredData)} />
+
+  <article class="flight-page container">
+    <div class="flight-hero">
+      <p class="eyebrow">Flight Detail</p>
+      <h3>{flight.title}</h3>
+      <p class="flight-summary">{flight.shortDescription}</p>
+    </div>
+
+    <div class="video-frame">
+      <iframe
+        src={embedUrl}
+        title={flight.title}
+        loading="lazy"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        allowfullscreen
+      />
+    </div>
+
+    {(metadata.length > 0 || flight.body || hasMap) && (
+      <section class="flight-details">
+        <div class="details-top">
+          {flight.body && (
+            <section class="details-copy">
+              <p class="summary-label">Overview</p>
+              <div class="details-copy-body">
+                <p>{flight.body}</p>
+              </div>
+            </section>
+          )}
+
+          {metadata.length > 0 && (
+            <aside class="details-facts">
+              <p class="summary-label">Flight Date</p>
+              <dl class="facts-list">
+                {metadata.map((item) => (
+                  <div class="fact-item">
+                    {item.label && <dt>{item.label}</dt>}
+                    <dd>{item.value}</dd>
+                  </div>
+                ))}
+              </dl>
+            </aside>
+          )}
+        </div>
+
+        {coordinates && (
+          <section class="details-map">
+            <div class="map-header">
+              <p class="summary-label">Location</p>
+            </div>
+            <div class="map-frame">
+              <FlightMap
+                slug={flight.slug}
+                lat={coordinates.lat}
+                lon={coordinates.lon}
+                title={flight.title}
+                locationLabel={flight.location ?? ""}
+              />
+            </div>
+          </section>
+        )}
+      </section>
+    )}
+  </article>
+</BaseLayout>
+
+<style>
+  .flight-page {
+    padding: 4.5rem 0;
+  }
+
+  .flight-hero {
+    padding-bottom: 0.6rem;
+    border-bottom: 1px solid rgba(229, 103, 23, 0.14);
+  }
+
+  .flight-summary {
+    margin-top: 1.5rem;
+    color: var(--muted);
+    font-size: 1.08rem;
+  }
+
+  .video-frame {
+    margin-top: 2rem;
+    overflow: hidden;
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow);
+    aspect-ratio: 16 / 9;
+    background: #140d0a;
+  }
+
+  .video-frame iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+
+  .flight-details {
+    display: grid;
+    gap: 1rem;
+    margin: 2rem 0;
+  }
+
+  .details-top {
+    display: grid;
+    grid-template-columns: minmax(0, 1.45fr) minmax(240px, 320px);
+    gap: 1.25rem;
+  }
+
+  .details-copy,
+  .details-facts,
+  .details-map {
+    border-radius: 12px;
+    border: 1px solid rgba(229, 103, 23, 0.14);
+    background:
+      linear-gradient(180deg, rgba(27, 17, 13, 0.94), rgba(14, 9, 7, 0.96)),
+      linear-gradient(135deg, rgba(229, 103, 23, 0.06), transparent 52%);
+    box-shadow: var(--shadow);
+  }
+
+  .details-copy,
+  .details-facts {
+    padding: 1.2rem;
+  }
+
+  .summary-label {
+    color: var(--accent-deep);
+    font-size: 0.76rem;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  .details-copy {
+    display: grid;
+    gap: 0.9rem;
+    align-content: start;
+  }
+
+  .details-copy-body {
+    max-width: 68ch;
+  }
+
+  .details-copy-body p {
+    color: var(--muted);
+    font-size: 1rem;
+    line-height: 1.85;
+    white-space: pre-line;
+  }
+
+  .details-facts {
+    display: grid;
+    gap: 0.9rem;
+    align-content: start;
+  }
+
+  .facts-list {
+    display: grid;
+    gap: 0.85rem;
+    margin: 0;
+  }
+
+  .fact-item {
+    display: grid;
+    gap: 0.3rem;
+    padding-bottom: 0.85rem;
+    border-bottom: 1px solid rgba(229, 103, 23, 0.12);
+  }
+
+  .fact-item:last-child {
+    padding-bottom: 0;
+    border-bottom: 0;
+  }
+
+  .fact-item dt {
+    color: var(--muted);
+    font-size: 0.76rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+  }
+
+  .fact-item dd {
+    margin: 0;
+    font-size: 1.02rem;
+    line-height: 1.45;
+  }
+
+  .details-map {
+    overflow: hidden;
+  }
+
+  .map-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    align-items: center;
+    padding: 1rem 1.2rem 0.85rem;
+    border-bottom: 1px solid rgba(229, 103, 23, 0.12);
+  }
+
+  .map-frame {
+    height: 285px;
+  }
+
+  @media (max-width: 900px) {
+    .details-top {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 720px) {
+    .flight-page {
+      padding: 3rem 0;
+    }
+
+    .map-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .map-frame {
+      height: 240px;
+    }
+  }
+</style>

@@ -1,0 +1,29 @@
+---
+import { withBase } from "@/lib/site";
+---
+
+<header class="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 py-5 bg-background/80 backdrop-blur-md border-b border-border/50">
+  <a class="text-xl font-display font-medium tracking-tight text-foreground no-underline" href={withBase("/")}>
+    Jamy<strong class="font-bold text-accent">FPV</strong>
+  </a>
+  <nav aria-label="Primary navigation">
+    <ul class="m-0 flex list-none items-center gap-8 p-0">
+      <li>
+        <a
+          class="text-xs tracking-[0.25em] uppercase text-muted-foreground hover:text-white transition-colors duration-300 no-underline"
+          href={withBase("/#showcase")}
+        >
+          Showcase
+        </a>
+      </li>
+      <li>
+        <a
+          class="text-xs tracking-[0.25em] uppercase text-muted-foreground hover:text-white transition-colors duration-300 no-underline"
+          href={withBase("/#contact")}
+        >
+          Contact
+        </a>
+      </li>
+    </ul>
+  </nav>
+</header>
