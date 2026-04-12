@@ -82,18 +82,17 @@ const consentScript = `
     <>
       <div
         id="cookie-consent-banner"
-        class="fixed inset-x-4 bottom-4 z-50 hidden rounded-3xl border border-border bg-background/95 p-5 text-sm shadow-2xl shadow-black/30 backdrop-blur md:left-1/2 md:max-w-2xl md:-translate-x-1/2"
+        class="fixed inset-x-3 bottom-3 z-50 hidden rounded-3xl border border-border bg-background/95 px-4 py-4 text-sm shadow-2xl shadow-black/30 backdrop-blur sm:inset-x-4 sm:bottom-4 sm:p-5 lg:left-1/2 lg:max-w-2xl lg:-translate-x-1/2"
         role="dialog"
         aria-live="polite"
         aria-label="Cookie preferences"
       >
-        <div class="space-y-4">
-          <div class="space-y-2">
+        <div class="space-y-3 sm:space-y-4">
+          <div class="space-y-1.5 sm:space-y-2">
             <p class="font-display text-lg font-semibold text-foreground">Analytics cookies</p>
-            <p class="text-muted-foreground">
+            <p class="text-sm leading-5 text-muted-foreground sm:text-base sm:leading-6">
               We'd like to use Google Analytics cookies to understand site traffic and improve the
-              website. We only enable these analytics cookies if you agree. You can change your
-              choice at any time in Cookie settings.
+              website. We only enable them if you agree.
             </p>
           </div>
           <div class="flex flex-col gap-3 sm:flex-row">
