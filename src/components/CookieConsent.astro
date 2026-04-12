@@ -1,0 +1,121 @@
+---
+const googleAnalyticsId = import.meta.env.PUBLIC_GOOGLE_ANALYTICS_ID;
+const shouldEnableAnalytics = import.meta.env.PROD && googleAnalyticsId;
+const consentScript = `
+  (() => {
+    const measurementId = ${JSON.stringify(googleAnalyticsId)};
+    const analyticsEnabled = ${JSON.stringify(Boolean(shouldEnableAnalytics))};
+    const storageKey = 'jamyfpv-analytics-consent';
+    const banner = document.getElementById('cookie-consent-banner');
+
+    window.dataLayer = window.dataLayer || [];
+    window.gtag = window.gtag || function gtag(){ dataLayer.push(arguments); };
+
+    gtag('consent', 'default', {
+      analytics_storage: 'denied',
+      ad_storage: 'denied',
+      ad_user_data: 'denied',
+      ad_personalization: 'denied'
+    });
+
+    const hideBanner = () => banner?.classList.add('hidden');
+    const showBanner = () => banner?.classList.remove('hidden');
+
+    const ensureAnalyticsConfigured = () => {
+      if (!analyticsEnabled) {
+        return;
+      }
+
+      if (window.__gaConfigured) {
+        return;
+      }
+
+      gtag('js', new Date());
+      gtag('config', measurementId);
+      window.__gaConfigured = true;
+    };
+
+    const applyConsent = (value) => {
+      const granted = value === 'granted';
+
+      gtag('consent', 'update', {
+        analytics_storage: granted ? 'granted' : 'denied',
+        ad_storage: 'denied',
+        ad_user_data: 'denied',
+        ad_personalization: 'denied'
+      });
+
+      if (granted) {
+        ensureAnalyticsConfigured();
+      }
+    };
+
+    const saveChoice = (value) => {
+      localStorage.setItem(storageKey, value);
+      applyConsent(value);
+      hideBanner();
+    };
+
+    const storedChoice = localStorage.getItem(storageKey);
+    if (storedChoice === 'granted' || storedChoice === 'denied') {
+      applyConsent(storedChoice);
+      hideBanner();
+    } else {
+      showBanner();
+    }
+
+    banner?.querySelector('[data-cookie-action="accept"]')?.addEventListener('click', () => {
+      saveChoice('granted');
+    });
+
+    banner?.querySelector('[data-cookie-action="reject"]')?.addEventListener('click', () => {
+      saveChoice('denied');
+    });
+
+    window.addEventListener('open-cookie-settings', showBanner);
+  })();
+`;
+---
+
+{
+  googleAnalyticsId && (
+    <>
+      <div
+        id="cookie-consent-banner"
+        class="fixed inset-x-4 bottom-4 z-50 hidden rounded-3xl border border-border bg-background/95 p-5 text-sm shadow-2xl shadow-black/30 backdrop-blur md:left-1/2 md:max-w-2xl md:-translate-x-1/2"
+        role="dialog"
+        aria-live="polite"
+        aria-label="Cookie preferences"
+      >
+        <div class="space-y-4">
+          <div class="space-y-2">
+            <p class="font-display text-lg font-semibold text-foreground">Analytics cookies</p>
+            <p class="text-muted-foreground">
+              We'd like to use Google Analytics cookies to understand site traffic and improve the
+              website. We only enable these analytics cookies if you agree. You can change your
+              choice at any time in Cookie settings.
+            </p>
+          </div>
+          <div class="flex flex-col gap-3 sm:flex-row">
+            <button
+              type="button"
+              data-cookie-action="accept"
+              class="inline-flex min-h-11 items-center justify-center rounded-full bg-primary px-5 font-medium text-primary-foreground transition-opacity hover:opacity-90 sm:min-w-40"
+            >
+              Accept analytics
+            </button>
+            <button
+              type="button"
+              data-cookie-action="reject"
+              class="inline-flex min-h-11 items-center justify-center rounded-full border border-border bg-secondary px-5 font-medium text-foreground transition-colors hover:border-primary/40 hover:text-primary sm:min-w-32"
+            >
+              Decline
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <script is:inline set:html={consentScript}></script>
+    </>
+  )
+}

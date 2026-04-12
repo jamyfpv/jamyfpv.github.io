@@ -1,6 +1,7 @@
 ---
 import Header from "@/components/Header.astro";
 import Footer from "@/components/Footer.astro";
+import CookieConsent from "@/components/CookieConsent.astro";
 import SeoHead from "@/components/SeoHead.astro";
 import "@/styles/global.css";
 
@@ -13,6 +14,8 @@ interface Props {
 }
 
 const props = Astro.props as Props;
+const googleAnalyticsId = import.meta.env.PUBLIC_GOOGLE_ANALYTICS_ID;
+const shouldLoadGoogleAnalytics = import.meta.env.PROD && googleAnalyticsId;
 ---
 
 <!doctype html>
@@ -26,6 +29,17 @@ const props = Astro.props as Props;
       href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap"
       rel="stylesheet"
     />
+    {
+      shouldLoadGoogleAnalytics && (
+        <>
+          <script
+            is:inline
+            async
+            src={`https://www.googletagmanager.com/gtag/js?id=${googleAnalyticsId}`}
+          ></script>
+        </>
+      )
+    }
     <SeoHead {...props} />
     <slot name="head" />
   </head>
@@ -37,5 +51,6 @@ const props = Astro.props as Props;
       </main>
       <Footer />
     </div>
+    <CookieConsent />
   </body>
 </html>
