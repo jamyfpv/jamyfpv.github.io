@@ -25,5 +25,13 @@ export function getYoutubeThumbnail(videoId?: string | null) {
 }
 
 export function getYoutubeEmbedUrl(videoId: string) {
-  return `https://www.youtube-nocookie.com/embed/${videoId}`;
+  const params = new URLSearchParams({
+    autoplay: "1",
+    playsinline: "1",
+    rel: "0",
+    iv_load_policy: "3",
+    fs: "1"
+  });
+
+  return `https://www.youtube-nocookie.com/embed/${videoId}?${params.toString()}`;
 }

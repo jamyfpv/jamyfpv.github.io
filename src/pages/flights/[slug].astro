@@ -3,7 +3,7 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
 import FlightMap from "@/components/FlightMap.astro";
 import { getFlightBySlug, getFlightSlugs } from "@/lib/contentful";
 import { getFlightSeo } from "@/lib/seo";
-import { absoluteUrl } from "@/lib/site";
+import { absoluteUrl, withBase } from "@/lib/site";
 import { getYoutubeEmbedUrl } from "@/lib/youtube";
 
 export async function getStaticPaths() {
@@ -28,7 +28,7 @@ if (!flight) {
 const seo = getFlightSeo(flight);
 const embedUrl = getYoutubeEmbedUrl(flight.youtubeVideoId);
 type MetadataItem = {
-  label?: string;
+  label: string;
   value: string;
 };
 type Coordinates = {
@@ -36,18 +36,24 @@ type Coordinates = {
   lon: number;
 };
 
-const metadata = [
-  flight.flightDate && {
-    value: new Intl.DateTimeFormat("en", {
+const flightDateLabel = flight.flightDate
+  ? new Intl.DateTimeFormat("en", {
       year: "numeric",
       month: "long",
       day: "numeric"
     }).format(new Date(flight.flightDate))
-  },
+  : null;
+
+const contextualMetadata = [
   flight.shotFor && {
-    label: "Shot for",
+    label: "Produced for",
     value: flight.shotFor
-  }
+  },
+  flight.locationText &&
+    !flight.location?.trim() && {
+      label: "Location",
+      value: flight.locationText
+    }
 ].filter((item): item is MetadataItem => Boolean(item));
 
 function parseCoordinates(location?: string): Coordinates | null {
@@ -72,6 +78,7 @@ function parseCoordinates(location?: string): Coordinates | null {
 
 const coordinates = parseCoordinates(flight.location);
 const hasMap = Boolean(coordinates);
+const locationLabel = flight.locationText || flight.location || "";
 
 const structuredData = {
   "@context": "https://schema.org",
@@ -95,229 +102,119 @@ const structuredData = {
 >
   <script is:inline slot="head" type="application/ld+json" set:html={JSON.stringify(structuredData)} />
 
-  <article class="flight-page container">
-    <div class="flight-hero">
-      <p class="eyebrow">Flight Detail</p>
-      <h3>{flight.title}</h3>
-      <p class="flight-summary">{flight.shortDescription}</p>
-    </div>
+  <article class="px-6 pb-20 pt-28 md:px-12 md:pb-24">
+    <div class="mx-auto grid max-w-6xl gap-8 md:gap-10">
+      <header class="grid gap-6 border-b border-border/50 pb-8 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
+        <div class="grid gap-4">
+          <div class="flex items-center gap-2">
+            <span class="h-2 w-2 rounded-full bg-primary animate-[pulse-dot_2s_ease-in-out_infinite]"></span>
+            <span class="text-xs font-medium uppercase tracking-[0.3em] text-primary">Flight detail</span>
+          </div>
 
-    <div class="video-frame">
-      <iframe
-        src={embedUrl}
-        title={flight.title}
-        loading="lazy"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-        allowfullscreen
-      />
-    </div>
+          <h1 class="text-4xl font-display font-bold tracking-tight text-foreground md:text-6xl">
+            {flight.title}
+          </h1>
 
-    {(metadata.length > 0 || flight.body || hasMap) && (
-      <section class="flight-details">
-        <div class="details-top">
-          {flight.body && (
-            <section class="details-copy">
-              <p class="summary-label">Overview</p>
-              <div class="details-copy-body">
-                <p>{flight.body}</p>
+          {flightDateLabel && (
+            <p class="w-fit border-b border-primary/30 pb-1 text-sm font-medium tracking-[0.08em] text-foreground/80 md:text-base">
+              {flightDateLabel}
+            </p>
+          )}
+
+          <p class="max-w-3xl text-base leading-7 text-muted-foreground md:text-lg">
+            {flight.shortDescription}
+          </p>
+        </div>
+
+        <a
+          class="inline-flex w-fit items-center gap-2 rounded-md border border-[#db6d17] px-4 py-2 text-xs font-semibold uppercase tracking-[0.15em] text-[#db6d17] no-underline transition-colors duration-300 hover:border-[#a85816] hover:bg-[#a85816] hover:text-white"
+          href={withBase("/#showcase")}
+        >
+          Back to flights
+        </a>
+      </header>
+
+      {contextualMetadata.length > 0 && (
+        <section class="rounded-[20px] border border-border/50 bg-[rgba(24,24,24,0.82)] px-6 py-5 md:px-7">
+          <dl class="flex flex-wrap items-center gap-x-6 gap-y-3">
+            {contextualMetadata.map((item) => (
+              <div class="grid gap-1">
+                <dt class="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                  {item.label}
+                </dt>
+                <dd class="m-0 text-sm text-foreground md:text-base">{item.value}</dd>
               </div>
+            ))}
+          </dl>
+        </section>
+      )}
+
+      <section class="grid gap-4">
+        <div class="grid gap-3">
+          <span class="block h-[0.12rem] w-12 bg-primary" aria-hidden="true"></span>
+          <h2 class="text-2xl font-display font-bold text-foreground md:text-3xl">
+            Watch the <span class="text-primary">Flight</span>
+          </h2>
+        </div>
+
+        <div class="overflow-hidden rounded-[20px] border border-border/50 bg-[rgba(24,24,24,0.82)] shadow-[0_24px_80px_rgba(0,0,0,0.35)]">
+          <div class="aspect-video bg-black">
+            <iframe
+              class="h-full w-full"
+              src={embedUrl}
+              title={flight.title}
+              loading="lazy"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowfullscreen
+            />
+          </div>
+        </div>
+      </section>
+
+      {(flight.body || hasMap) && (
+        <section class="grid gap-6">
+          {flight.body && (
+            <section class="rounded-[20px] border border-border/50 bg-[rgba(24,24,24,0.82)] p-6 md:p-7">
+              <div class="mb-5 grid gap-3">
+                <span class="block h-[0.12rem] w-12 bg-primary" aria-hidden="true"></span>
+                <h2 class="text-2xl font-display font-bold text-foreground md:text-3xl">
+                  Behind the <span class="text-primary">Flight</span>
+                </h2>
+              </div>
+
+              <p class="max-w-3xl whitespace-pre-line text-base leading-8 text-muted-foreground">
+                {flight.body}
+              </p>
             </section>
           )}
 
-          {metadata.length > 0 && (
-            <aside class="details-facts">
-              <p class="summary-label">Flight Date</p>
-              <dl class="facts-list">
-                {metadata.map((item) => (
-                  <div class="fact-item">
-                    {item.label && <dt>{item.label}</dt>}
-                    <dd>{item.value}</dd>
+          {coordinates && (
+            <section class="overflow-hidden rounded-[20px] border border-border/50 bg-[rgba(24,24,24,0.82)]">
+              <div class="border-b border-border/50 px-6 py-5 md:px-7">
+                <div class="grid gap-3">
+                  <span class="block h-[0.12rem] w-12 bg-primary" aria-hidden="true"></span>
+                  <div class="grid gap-1">
+                    <h2 class="text-2xl font-display font-bold text-foreground">
+                      Flight <span class="text-primary">Location</span>
+                    </h2>
+                    {locationLabel && <p class="text-sm text-muted-foreground">{locationLabel}</p>}
                   </div>
-                ))}
-              </dl>
-            </aside>
-          )}
-        </div>
+                </div>
+              </div>
 
-        {coordinates && (
-          <section class="details-map">
-            <div class="map-header">
-              <p class="summary-label">Location</p>
-            </div>
-            <div class="map-frame">
-              <FlightMap
-                slug={flight.slug}
-                lat={coordinates.lat}
-                lon={coordinates.lon}
-                title={flight.title}
-                locationLabel={flight.location ?? ""}
-              />
-            </div>
-          </section>
-        )}
-      </section>
-    )}
+              <div class="h-[240px] md:h-[320px]">
+                <FlightMap
+                  slug={flight.slug}
+                  lat={coordinates.lat}
+                  lon={coordinates.lon}
+                  title={flight.title}
+                  locationLabel={locationLabel}
+                />
+              </div>
+            </section>
+          )}
+        </section>
+      )}
+    </div>
   </article>
 </BaseLayout>
-
-<style>
-  .flight-page {
-    padding: 4.5rem 0;
-  }
-
-  .flight-hero {
-    padding-bottom: 0.6rem;
-    border-bottom: 1px solid rgba(229, 103, 23, 0.14);
-  }
-
-  .flight-summary {
-    margin-top: 1.5rem;
-    color: var(--muted);
-    font-size: 1.08rem;
-  }
-
-  .video-frame {
-    margin-top: 2rem;
-    overflow: hidden;
-    border-radius: var(--radius-xl);
-    border: 1px solid var(--line);
-    box-shadow: var(--shadow);
-    aspect-ratio: 16 / 9;
-    background: #140d0a;
-  }
-
-  .video-frame iframe {
-    width: 100%;
-    height: 100%;
-    border: 0;
-  }
-
-  .flight-details {
-    display: grid;
-    gap: 1rem;
-    margin: 2rem 0;
-  }
-
-  .details-top {
-    display: grid;
-    grid-template-columns: minmax(0, 1.45fr) minmax(240px, 320px);
-    gap: 1.25rem;
-  }
-
-  .details-copy,
-  .details-facts,
-  .details-map {
-    border-radius: 12px;
-    border: 1px solid rgba(229, 103, 23, 0.14);
-    background:
-      linear-gradient(180deg, rgba(27, 17, 13, 0.94), rgba(14, 9, 7, 0.96)),
-      linear-gradient(135deg, rgba(229, 103, 23, 0.06), transparent 52%);
-    box-shadow: var(--shadow);
-  }
-
-  .details-copy,
-  .details-facts {
-    padding: 1.2rem;
-  }
-
-  .summary-label {
-    color: var(--accent-deep);
-    font-size: 0.76rem;
-    font-weight: 800;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-  }
-
-  .details-copy {
-    display: grid;
-    gap: 0.9rem;
-    align-content: start;
-  }
-
-  .details-copy-body {
-    max-width: 68ch;
-  }
-
-  .details-copy-body p {
-    color: var(--muted);
-    font-size: 1rem;
-    line-height: 1.85;
-    white-space: pre-line;
-  }
-
-  .details-facts {
-    display: grid;
-    gap: 0.9rem;
-    align-content: start;
-  }
-
-  .facts-list {
-    display: grid;
-    gap: 0.85rem;
-    margin: 0;
-  }
-
-  .fact-item {
-    display: grid;
-    gap: 0.3rem;
-    padding-bottom: 0.85rem;
-    border-bottom: 1px solid rgba(229, 103, 23, 0.12);
-  }
-
-  .fact-item:last-child {
-    padding-bottom: 0;
-    border-bottom: 0;
-  }
-
-  .fact-item dt {
-    color: var(--muted);
-    font-size: 0.76rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-  }
-
-  .fact-item dd {
-    margin: 0;
-    font-size: 1.02rem;
-    line-height: 1.45;
-  }
-
-  .details-map {
-    overflow: hidden;
-  }
-
-  .map-header {
-    display: flex;
-    justify-content: space-between;
-    gap: 1rem;
-    align-items: center;
-    padding: 1rem 1.2rem 0.85rem;
-    border-bottom: 1px solid rgba(229, 103, 23, 0.12);
-  }
-
-  .map-frame {
-    height: 285px;
-  }
-
-  @media (max-width: 900px) {
-    .details-top {
-      grid-template-columns: 1fr;
-    }
-  }
-
-  @media (max-width: 720px) {
-    .flight-page {
-      padding: 3rem 0;
-    }
-
-    .map-header {
-      flex-direction: column;
-      align-items: flex-start;
-    }
-
-    .map-frame {
-      height: 240px;
-    }
-  }
-</style>
